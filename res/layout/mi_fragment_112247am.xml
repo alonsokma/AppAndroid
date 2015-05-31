@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+     android:background="#ECF8E0"
+    android:orientation="vertical" >
+
+    <TableLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+            <TextView
+                android:id="@+id/textView_112249AM"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Lista de Actividades"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+    </TableLayout>
+    <ListView
+        android:id="@+id/ListView_112257AM"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView1"
+        android:layout_below="@+id/textView1"
+        android:layout_marginLeft="23dp"
+        android:layout_marginTop="5dp" >
+    </ListView>
+</LinearLayout>
