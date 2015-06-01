@@ -13,7 +13,8 @@ public class MainActivity extends Base {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
+		user = getIntent().getStringExtra("user");
+		Mensaje("Bienvenido "+user);
 		android.app.FragmentManager FM_112242AM = getFragmentManager();
 		FragmentTransaction FT_112242AM = FM_112242AM.beginTransaction();
 		// creamos una instancia de nuestro fragment

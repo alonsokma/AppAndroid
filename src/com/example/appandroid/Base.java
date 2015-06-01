@@ -34,6 +34,7 @@ import android.widget.ImageView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -55,11 +56,14 @@ public class Base extends Activity {
 	private String selectedGridDate;
 
 	private String nombre;
-	private Date fecha;
+	private String fecha;
 	private String detalle;
 	private int tipo;
 	private Timestamp hora;
-	private Usuario user;
+	private String nick;
+	public static String user;
+	private String contactName;
+	private String contactPhone;
 	private GregorianCalendar calen;
 
 	public void Mensaje(String msg) {
@@ -113,6 +117,8 @@ public class Base extends Activity {
 		View promptView = layoutInflater.inflate(R.layout.prompts, null);
 
 		Intent intento = new Intent(getApplicationContext(), Prompts.class);
+		intento.putExtra("str1", fecha);
+		intento.putExtra("user", nick);
 		startActivity(intento);
 		/*
 		 * AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
@@ -171,6 +177,7 @@ public class Base extends Activity {
 					e.printStackTrace();
 				}
 		        fecha = new java.sql.Date(parsed.getTime());*/
+				fecha = selectedGridDate;
 				Mensaje(selectedGridDate);
 
 			}
@@ -365,22 +372,58 @@ public class Base extends Activity {
 			public void onClick(View v) {
 				// if(msg.equals("Texto")){Mensaje("Texto en el botón ");};
 				switch (v.getId()) {
-				case R.id.btn:
+				case R.id.btnRegistrar: {
+					Intent intento = new Intent(getApplicationContext(),
+							Registro.class);
+					startActivity(intento);
+				};break;
+				case R.id.btnRegU: {
+					EditText innick = (EditText) findViewById(R.id.input_nick);
+					String nick = innick.getText().toString();
+					EditText innombre = (EditText) findViewById(R.id.input_nombre);
+					String nombre = innombre.getText().toString();
+					EditText inpass = (EditText) findViewById(R.id.input_pass);
+					String pass = inpass.getText().toString();
+					if (AgregarUsuario(nick, nombre, pass)) {
+						Intent intento = new Intent(getApplicationContext(),
+								Login.class);
+						startActivity(intento);
+					}
+				};break;
+				case R.id.btnIniciar: {
+					EditText innick = (EditText) findViewById(R.id.inputnick);
+					String nick = innick.getText().toString();
+					EditText inpass = (EditText) findViewById(R.id.inputpass);
+					String pass = inpass.getText().toString();
+					if (ObtenerUsuario(nick, pass)) {
+						Intent intento = new Intent(getApplicationContext(),
+								MainActivity.class);
+						intento.putExtra("user", nick);
+						startActivity(intento);				
+					} else {
+						Mensaje("Usuario o Contraseña Invalidos");
+					}
+				};break;
+				case R.id.btn:{
 					Intent intent = new Intent(Intent.ACTION_PICK,
 							ContactsContract.Contacts.CONTENT_URI);
 					startActivityForResult(intent, PICK_CONTACT);
-					break;
-				case R.id.btnAdd:
+					EditText incontact = (EditText) findViewById(R.id.contactsearch);
+					incontact.setText(contactName +":"+contactPhone);
+				};break;
+				case R.id.btnAdd:{
 					EditText nom = (EditText) findViewById(R.id.namein);
 					nombre = nom.getText().toString();
 					EditText det = (EditText) findViewById(R.id.detallesin);
 					detalle = det.getText().toString();
-					break;
-				case R.id.btnCancel:
-					Intent intento = new Intent(getApplicationContext(), MainActivity.class);
+					
+				};break;
+				case R.id.btnCancel:{
+					Intent intento = new Intent(getApplicationContext(),
+							MainActivity.class);
 					intento.putExtra("str1", fecha);
 					startActivity(intento);
-					break;
+				};break;
 				default:
 					break;
 				}// fin de casos (Button)
@@ -398,7 +441,7 @@ public class Base extends Activity {
 				Uri contactData = data.getData();
 				Cursor c = managedQuery(contactData, null, null, null, null);
 				if (c.moveToFirst()) {
-					String name = c
+					contactName = c
 							.getString(c
 									.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME));
 					String id = c
@@ -417,9 +460,10 @@ public class Base extends Activity {
 												+ " = " + id, null, null);
 						phones.moveToFirst();
 
-						String cNumber = phones.getString(phones
+						contactPhone = phones.getString(phones
 								.getColumnIndex("data1"));
-						Mensaje(name + cNumber);
+						
+						Mensaje(contactName + contactPhone);
 					}
 
 				}
@@ -482,6 +526,78 @@ public class Base extends Activity {
 	public void llenarLista(Mi_fragment_112247AM f) {
 		f.LlenarLista_112257AM("Nombre del evento obtenido desde la lista o base de datos");
 		// Aqui se cargan las actividades de la base de datos por usuario
+	}
+
+	DBAdapter db;
+
+	public void CrearBD() {
+		db = new DBAdapter(this);
+	}
+
+	public boolean AgregarUsuario(String nick, String nombre, String pass) {
+		if (db == null) {
+			Log.i("ERROR DB: ", "Error db es null");
+			return false;
+		}
+		db.open();
+		if (db.insertUsuario(nick, nombre, pass)) {
+			Mensaje("Se Agrego un Usuario");
+			db.close();
+			return true;
+		} else {
+			Mensaje("No se pudo agregar un Usuario");
+			return false;
+		}
+	}
+
+	public void ObtenerDatos() {
+		// --cargamos todos los datos---
+		db.open();
+		Cursor c = db.CargarTodosLosUsuarios();
+		if (c.moveToFirst()) {
+			do {
+				MostarDato(c);
+			} while (c.moveToNext());
+		}
+		db.close();
+	}
+
+	public boolean ObtenerUsuario(String nick, String pass) {
+		// ---cargar un contacto ---
+		db.open();
+		Cursor c = db.ObtenerUsuario(nick, pass);
+		if (c.moveToFirst()) {
+			db.close();
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public void ActualizarUsuario(String nick, String nombre, String pass) {
+		// ---update a contact---
+		db.open();
+		if (db.ActualizarActividad(nick, nombre, pass))
+			Mensaje("Se actualizó la Actividad");
+		else
+			Mensaje("Fallo al actualizar");
+		db.close();
+	}
+
+	public void BorrarDato(String nick) {
+		db.open();
+		if (db.BorrarUsuario(nick))
+			Mensaje("Borrado exitoso");
+		else
+			Mensaje("Fallo al intentar borrar");
+		db.close();
+	}
+
+	public void MostarDato(Cursor c) {
+		/*
+		 * Mensaje("id: " + c.getString(0) + "\n" + "Nombre: " + c.getString(1)
+		 * + "\n" + "Dir:  " + c.getString(2));
+		 */
 	}
 
 }// fin de la clase base

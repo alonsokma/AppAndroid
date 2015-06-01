@@ -14,6 +14,7 @@ public class Prompts extends Base{
 		 OnclickDelButton(findViewById(R.id.btnCancel));
 		 
 		 String msg = getIntent().getStringExtra("str1");
+		 user = getIntent().getStringExtra("user");
 		 TextView t = (TextView) findViewById(R.id.date);
 			t.setText("");
 			t.setText(t.getText().toString()+msg);
