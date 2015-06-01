@@ -3,20 +3,17 @@ package com.example.appandroid;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
-
+import com.example.appandroid.CalendarAdapter;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -24,9 +21,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
-import android.provider.Contacts.People;
 import android.provider.ContactsContract;
-import android.support.v7.app.ActionBarActivity;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -45,6 +40,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnCreateContextMenuListener;
 
 public class Base extends Activity {
 	static String TextoCompartido = "";
@@ -149,7 +145,8 @@ public class Base extends Activity {
 					int position, long id) {
 
 				((CalendarAdapter) parent.getAdapter()).setSelected(v);
-				selectedGridDate = CalendarAdapter.dayString.get(position);
+				String selectedGridDate = CalendarAdapter.dayString
+						.get(position);
 				String[] separatedTime = selectedGridDate.split("-");
 				String gridvalueString = separatedTime[2].replaceFirst("^0*",
 						"");// taking last part of date. ie; 2 from 2012-12-02.
@@ -164,7 +161,7 @@ public class Base extends Activity {
 				}
 				((CalendarAdapter) parent.getAdapter()).setSelected(v);
 
-				registerForContextMenu(v);
+				//registerForContextMenu(v);
 				/*SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 		        Date parsed = null;
 				try {
@@ -178,6 +175,8 @@ public class Base extends Activity {
 
 			}
 		});
+		
+		gridview.setOnCreateContextMenuListener(this);
 	}
 
 	@Override
