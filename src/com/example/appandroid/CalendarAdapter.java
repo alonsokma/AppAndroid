@@ -93,16 +93,16 @@ public class CalendarAdapter extends BaseAdapter {
 		// checking whether the day is in current month or not.
 		if ((Integer.parseInt(gridvalue) > 1) && (position < firstDay)) {
 			// setting offdays to white color.
-			dayView.setTextColor(Color.WHITE);
+			dayView.setTextColor(Color.parseColor("#F2F2F2"));
 			dayView.setClickable(false);
 			dayView.setFocusable(false);
 		} else if ((Integer.parseInt(gridvalue) < 7) && (position > 28)) {
-			dayView.setTextColor(Color.WHITE);
+			dayView.setTextColor(Color.parseColor("#F2F2F2"));
 			dayView.setClickable(false);
 			dayView.setFocusable(false);
 		} else {
 			// setting curent month's days in blue color.
-			dayView.setTextColor(Color.BLUE);
+			dayView.setTextColor(Color.parseColor("#6E6E6E"));
 		}
 
 		if (dayString.get(position).equals(curentDateString)) {
@@ -112,7 +112,7 @@ public class CalendarAdapter extends BaseAdapter {
 			v.setBackgroundResource(R.drawable.list_item_background);
 		}
 		dayView.setText(gridvalue);
-
+		
 		// create date string for comparison
 		String date = dayString.get(position);
 

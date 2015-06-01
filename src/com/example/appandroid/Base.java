@@ -1,36 +1,70 @@
 package com.example.appandroid;
 
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
+
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Handler;
+import android.provider.Contacts.People;
+import android.provider.ContactsContract;
 import android.support.v7.app.ActionBarActivity;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ImageView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 
-public class Base extends ActionBarActivity {
+public class Base extends Activity {
 	static String TextoCompartido = "";
 	static ImageView ImagenCompartida;
 
-	public GregorianCalendar month, itemmonth;// calendar instances.
+	public GregorianCalendar month, itemmonth;
+	public CalendarAdapter adapter;
+	public Handler handler;
+	public ArrayList<String> items;
+	public ArrayList<Actividad> actividades;
+	final Context context = this;
+	private String selectedGridDate;
 
-	public CalendarAdapter adapter;// adapter instance
-	public Handler handler;// for grabbing some event values for showing the dot
-							// marker.
-	public ArrayList<String> items; // container to store calendar items which
-									// needs showing the event marker
+	private String nombre;
+	private Date fecha;
+	private String detalle;
+	private int tipo;
+	private Timestamp hora;
+	private Usuario user;
+	private GregorianCalendar calen;
 
 	public void Mensaje(String msg) {
 		Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
@@ -42,6 +76,7 @@ public class Base extends ActionBarActivity {
 		itemmonth = (GregorianCalendar) month.clone();
 
 		items = new ArrayList<String>();
+		actividades = new ArrayList<Actividad>();
 		adapter = new CalendarAdapter(this, month);
 
 		GridView gridview = (GridView) findViewById(R.id.gridview);
@@ -52,7 +87,7 @@ public class Base extends ActionBarActivity {
 
 		TextView title = (TextView) findViewById(R.id.title);
 		title.setText(android.text.format.DateFormat.format("MMMM yyyy", month));
-		
+
 		OnClickdeGridView();
 		OnClickdeNextMonth();
 		OnClickdeNextYear();
@@ -76,15 +111,45 @@ public class Base extends ActionBarActivity {
 		alert11.show();
 	};
 
+	public void AgregarActividad() {
+		LayoutInflater layoutInflater = LayoutInflater.from(context);
+
+		View promptView = layoutInflater.inflate(R.layout.prompts, null);
+
+		Intent intento = new Intent(getApplicationContext(), Prompts.class);
+		startActivity(intento);
+		/*
+		 * AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+		 * context);
+		 * 
+		 * // set prompts.xml to be the layout file of the alertdialog builder
+		 * alertDialogBuilder.setView(promptView);
+		 * 
+		 * // setup a dialog window ActivarSpinner_74134PM(); alertDialogBuilder
+		 * .setCancelable(false) .setPositiveButton("Agregar", new
+		 * DialogInterface.OnClickListener() { public void
+		 * onClick(DialogInterface dialog, int id) { // get user input and set
+		 * it to result //editTextMainScreen.setText(input.getText()); } })
+		 * .setNegativeButton("Cancelar", new DialogInterface.OnClickListener()
+		 * { public void onClick(DialogInterface dialog, int id) {
+		 * dialog.cancel(); } });
+		 * 
+		 * // create an alert dialog AlertDialog alertD =
+		 * alertDialogBuilder.create();
+		 * 
+		 * alertD.show();
+		 */
+	}
+
+	@SuppressLint("SimpleDateFormat")
 	protected void OnClickdeGridView() {
-		GridView gridview = (GridView) findViewById(R.id.gridview);
+		final GridView gridview = (GridView) findViewById(R.id.gridview);
 		gridview.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View v,
 					int position, long id) {
 
 				((CalendarAdapter) parent.getAdapter()).setSelected(v);
-				String selectedGridDate = CalendarAdapter.dayString
-						.get(position);
+				selectedGridDate = CalendarAdapter.dayString.get(position);
 				String[] separatedTime = selectedGridDate.split("-");
 				String gridvalueString = separatedTime[2].replaceFirst("^0*",
 						"");// taking last part of date. ie; 2 from 2012-12-02.
@@ -99,10 +164,33 @@ public class Base extends ActionBarActivity {
 				}
 				((CalendarAdapter) parent.getAdapter()).setSelected(v);
 
+				registerForContextMenu(v);
+				/*SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+		        Date parsed = null;
+				try {
+					parsed = (Date) format.parse(selectedGridDate);
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		        fecha = new java.sql.Date(parsed.getTime());*/
 				Mensaje(selectedGridDate);
 
 			}
 		});
+	}
+
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		getMenuInflater().inflate(R.menu.mymenu, menu);
+		super.onCreateContextMenu(menu, v, menuInfo);
+	}
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		AgregarActividad();
+		return super.onContextItemSelected(item);
 	}
 
 	protected void OnClickdeNextMonth() {
@@ -130,7 +218,7 @@ public class Base extends ActionBarActivity {
 			}
 		});
 	}
-	
+
 	protected void OnClickdeNextYear() {
 		RelativeLayout nextYear = (RelativeLayout) findViewById(R.id.nextyear);
 		nextYear.setOnClickListener(new OnClickListener() {
@@ -224,5 +312,177 @@ public class Base extends ActionBarActivity {
 			adapter.notifyDataSetChanged();
 		}
 	};
+
+	public void showTimePickerDialog(View v) {
+		int hour;
+		int minute;
+		final Calendar c = Calendar.getInstance();
+		hour = c.get(Calendar.HOUR_OF_DAY);
+		minute = c.get(Calendar.MINUTE);
+		TimePickerDialog newFragment = new TimePickerDialog(this,
+				timePickerListener, hour, minute, false);
+		newFragment.show();
+		// TextView hora = (TextView) findViewById(R.id.hour);
+		// hora.setText(hora.getText().toString()+24+":"+34);
+	}
+
+	private TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
+		public void onTimeSet(TimePicker view, int selectedHour,
+				int selectedMinute) {
+
+			TextView thora = (TextView) findViewById(R.id.hour);
+			thora.setText("Hora de inicio: ");
+			thora.setText(thora.getText().toString() + padding_str(selectedHour)
+					+ ":" + padding_str(selectedMinute));
+			// Mensaje(hora.getText().toString());
+			
+			/*String str_hour=padding_str(selectedHour)+ ":" + padding_str(selectedMinute);
+	        DateFormat formatter ; 
+	        Date date = null ; 
+	        formatter = new SimpleDateFormat("hh:mm");
+	        try {
+				date = (Date)formatter.parse(str_hour);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+	        hora = new Timestamp(date.getTime());*/
+		}
+	};
+
+	private static String padding_str(int c) {
+		if (c >= 10)
+			return String.valueOf(c);
+		else
+			return "0" + String.valueOf(c);
+	}
+
+	static final int PICK_CONTACT = 1;
+
+	public void OnclickDelButton(final View view) {
+		Button miButton = (Button) view;
+		miButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				// if(msg.equals("Texto")){Mensaje("Texto en el botón ");};
+				switch (v.getId()) {
+				case R.id.btn:
+					Intent intent = new Intent(Intent.ACTION_PICK,
+							ContactsContract.Contacts.CONTENT_URI);
+					startActivityForResult(intent, PICK_CONTACT);
+					break;
+				case R.id.btnAdd:
+					EditText nom = (EditText) findViewById(R.id.namein);
+					nombre = nom.getText().toString();
+					EditText det = (EditText) findViewById(R.id.detallesin);
+					detalle = det.getText().toString();
+					break;
+				case R.id.btnCancel:
+					Intent intento = new Intent(getApplicationContext(), MainActivity.class);
+					intento.putExtra("str1", fecha);
+					startActivity(intento);
+					break;
+				default:
+					break;
+				}// fin de casos (Button)
+			}// fin del onclick
+		});
+	}
+
+	@Override
+	public void onActivityResult(int reqCode, int resultCode, Intent data) {
+		super.onActivityResult(reqCode, resultCode, data);
+
+		switch (reqCode) {
+		case (PICK_CONTACT):
+			if (resultCode == Activity.RESULT_OK) {
+				Uri contactData = data.getData();
+				Cursor c = managedQuery(contactData, null, null, null, null);
+				if (c.moveToFirst()) {
+					String name = c
+							.getString(c
+									.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME));
+					String id = c
+							.getString(c
+									.getColumnIndexOrThrow(ContactsContract.Contacts._ID));
+
+					String hasPhone = c
+							.getString(c
+									.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER));
+
+					if (hasPhone.equalsIgnoreCase("1")) {
+						Cursor phones = getContentResolver()
+								.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+										null,
+										ContactsContract.CommonDataKinds.Phone.CONTACT_ID
+												+ " = " + id, null, null);
+						phones.moveToFirst();
+
+						String cNumber = phones.getString(phones
+								.getColumnIndex("data1"));
+						Mensaje(name + cNumber);
+					}
+
+				}
+			}
+		}
+	}
+
+	protected void ActivarSpinner_101825PM() {
+		final String[] valores = { "Solo una vez", "Diariamente",
+				"Mensualmente", "Anualmente" };
+		Spinner spinner = (Spinner) findViewById(R.id.Spinner_101825PM);
+		ArrayAdapter<String> Adaptador = new ArrayAdapter<String>(this,
+				android.R.layout.simple_spinner_item, valores);
+		Adaptador
+				.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+		spinner.setAdapter(Adaptador);
+
+		spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view,
+					int posicion, long id) {
+				tipo = posicion;
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+			}
+		});
+
+		spinner.setAdapter(Adaptador);
+
+	};
+
+	protected void ActivarSpinner_Alarm() {
+		final String[] valores = { "A la hora del evento", "1 hora antes",
+				"1 dia antes", "1 semana antes" };
+		Spinner spinner = (Spinner) findViewById(R.id.Spinner_alarm);
+		ArrayAdapter<String> Adaptador = new ArrayAdapter<String>(this,
+				android.R.layout.simple_spinner_item, valores);
+		Adaptador
+				.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+		spinner.setAdapter(Adaptador);
+
+		spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view,
+					int posicion, long id) {
+				//aqui hay q setear la alarma 
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+			}
+		});
+
+		spinner.setAdapter(Adaptador);
+
+	};
+
+	public void llenarLista(Mi_fragment_112247AM f) {
+		f.LlenarLista_112257AM("Nombre del evento obtenido desde la lista o base de datos");
+		// Aqui se cargan las actividades de la base de datos por usuario
+	}
 
 }// fin de la clase base
