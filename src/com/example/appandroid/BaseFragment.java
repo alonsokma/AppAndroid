@@ -19,18 +19,23 @@ import android.widget.TextView;
 // Recuerde:l manifest: android:minSdkVersion="12" 
 public class BaseFragment extends Fragment {
 	private List<ClaseListView_112257AM> MiLista_112257AM = new ArrayList<ClaseListView_112257AM>();
-
+	public static View v;
 	public void Mensaje(String msg) {
 		Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
 	};
 
-	protected void LlenarLista_112257AM(String nom) {
-		MiLista_112257AM.add(new ClaseListView_112257AM(nom,
+	protected void LlenarLista_112257AM(String s) {
+			MiLista_112257AM.add(new ClaseListView_112257AM(s,
 				R.drawable.ic_launcher));
+	}
+	
+	protected void LimpiarLista_112257AM() {
+		MiLista_112257AM = new ArrayList<ClaseListView_112257AM>();
 	}
 
 	protected void LlenarListView_112257AM(View v) {
 		ArrayAdapter<ClaseListView_112257AM> adapter = new MyListAdapter_112257AM();
+		if(adapter == null) return;
 		ListView list = (ListView) v.findViewById(R.id.ListView_112257AM);
 		list.setAdapter(adapter);
 	}

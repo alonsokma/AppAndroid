@@ -12,9 +12,11 @@ public class Prompts extends Base{
 		 OnclickDelButton(findViewById(R.id.btn));
 		 OnclickDelButton(findViewById(R.id.btnAdd));
 		 OnclickDelButton(findViewById(R.id.btnCancel));
+		 CrearBD();
 		 
 		 String msg = getIntent().getStringExtra("str1");
 		 user = getIntent().getStringExtra("user");
+		 Mensaje("Usuario: "+user);
 		 TextView t = (TextView) findViewById(R.id.date);
 			t.setText("");
 			t.setText(t.getText().toString()+msg);

@@ -10,9 +10,9 @@ public class Mi_fragment_112247AM extends BaseFragment {
     @Override  
        public View onCreateView(LayoutInflater inflater, ViewGroup container,  
                  Bundle savedInstanceState) {  
-            View v = inflater.inflate(R.layout.mi_fragment_112247am, container,false);
+            v = inflater.inflate(R.layout.mi_fragment_112247am, container,false);
             LlenarListView_112257AM(v); OnClickdeListView_112257AM(v);
-
+            
             return v;//Mnemosina: No modificar esta linea   
        }   
     

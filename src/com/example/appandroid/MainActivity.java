@@ -13,18 +13,18 @@ public class MainActivity extends Base {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		CrearBD();
 		user = getIntent().getStringExtra("user");
-		Mensaje("Bienvenido "+user);
+		fecha = getIntent().getStringExtra("str1");
 		android.app.FragmentManager FM_112242AM = getFragmentManager();
 		FragmentTransaction FT_112242AM = FM_112242AM.beginTransaction();
 		// creamos una instancia de nuestro fragment
-		Mi_fragment_112247AM F1_112242AM = new Mi_fragment_112247AM();
-		llenarLista(F1_112242AM);
+		F1_112242AM = new Mi_fragment_112247AM();
 		FT_112242AM.add(R.id.contenedor_fragment_112246AM, F1_112242AM);
 		FT_112242AM.addToBackStack(null);
 		FT_112242AM.commit();
 		Init();
-
+		llenarLista(F1_112242AM,fecha);
 	}
 
 	@Override

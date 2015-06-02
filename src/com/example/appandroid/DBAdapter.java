@@ -10,14 +10,16 @@ import android.util.Log;
 public class DBAdapter {
 	
     static final String TAG = "DBAdapter";
-    static final String DATABASE_NAME = "Calendar";
+    static final String DATABASE_NAME = "Calendar.db";
     static final int DATABASE_VERSION = 1;
-    static final String DATABASE_CREATE =
-    	"CREATE TABLE `Usuarios` (`nick` TEXT NOT NULL,`nombre`	TEXT,`pass`	TEXT,PRIMARY KEY(nick));"
-    	+"CREATE TABLE `Actividades` (`nombre` TEXT NOT NULL,`fecha` TEXT,`hora` TEXT,"
+    static final String TABLE_USUARIOS =
+    	"CREATE TABLE `Usuarios` (`nick` TEXT NOT NULL,`nombre`	TEXT,`pass`	TEXT,PRIMARY KEY(nick));";
+    static final String TABLE_ACTIVIDADES =
+    	" CREATE TABLE `Actividades` (`nombre` TEXT NOT NULL,`fecha` TEXT,`hora` TEXT,"
     	+"`detalle`	TEXT,`tipo`	INTEGER,`usuario` TEXT NOT NULL,PRIMARY KEY(nombre,usuario),"
-    	+"FOREIGN KEY(`usuario`) REFERENCES Usuario ( nick ));"
-    	+"CREATE TABLE `ActividadContactos` ("
+    	+"FOREIGN KEY(`usuario`) REFERENCES Usuario ( nick ));";
+    static final String TABLE_ACTIVIDADCONTACTOS = 
+    	" CREATE TABLE `ActividadContactos` ("
     	+"`nombreContacto` TEXT NOT NULL,`telefonoContacto`	TEXT NOT NULL,`nombreActividad`	TEXT NOT NULL,"
     	+"`nombreUsuario` TEXT NOT NULL,PRIMARY KEY(nombreContacto,telefonoContacto,nombreActividad,nombreUsuario),"
     	+"FOREIGN KEY(`nombreUsuario`) REFERENCES Actividades ( usuario ));";
@@ -43,7 +45,9 @@ public class DBAdapter {
         {
         	Log.i(this.getClass().toString(), "Creando base de datos");
             try {
-                db.execSQL(DATABASE_CREATE);
+                db.execSQL(TABLE_USUARIOS);
+                db.execSQL(TABLE_ACTIVIDADES);
+                db.execSQL(TABLE_ACTIVIDADCONTACTOS);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -52,6 +56,8 @@ public class DBAdapter {
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
         {
            db.execSQL("DROP TABLE IF EXISTS usuarios");
+           db.execSQL("DROP TABLE IF EXISTS actividades");
+           db.execSQL("DROP TABLE IF EXISTS actividadcontactos");
            onCreate(db);
         }
     }
@@ -80,17 +86,28 @@ public class DBAdapter {
     	}
     }
     
-    public long insertActividad(String nombre, String fecha,String hora,
+    public boolean insertActividad(String nombre, String fecha,String hora,
     	String detalle,int tipo,String usuario) {
-        ContentValues initialValues = new ContentValues();
-        initialValues.put("nombre", nombre);
-        initialValues.put("fecha", fecha);
-        initialValues.put("hora", hora);
-        initialValues.put("detalle", detalle);
-        initialValues.put("tipo", tipo);
-        initialValues.put("usuario", usuario);
-        return db.insert("Actividades", null, initialValues);
+    	try{
+    	db.execSQL("INSERT INTO ACTIVIDADES(nombre,fecha,hora,detalle,tipo,usuario)"
+    			+ " VALUES('"+nombre+"','"+fecha+"','"+hora+"','"+detalle+"'"
+    			+ ",'"+tipo+"','"+usuario+"')");
+    	return true;
+    	}catch(Exception e){
+    		return false;
+    	}
     }
+    
+    public boolean insertActividadContacto(String nombreContacto, String telContacto
+    		,String nombreActividad, String nombreUsuario) {
+        	try{
+        	db.execSQL("INSERT INTO ACTIVIDADCONTACTOS(nombreContacto,telefonoContacto,nombreActividad,nombreUsuario)"
+        			+ " VALUES('"+nombreContacto+"','"+telContacto+"','"+nombreActividad+"','"+nombreUsuario+"')");
+        	return true;
+        	}catch(Exception e){
+        		return false;
+        	}
+       }
     
     //---Borramos un dato particular---
     public boolean BorrarUsuario(String nick){
@@ -128,9 +145,9 @@ public class DBAdapter {
     
     public Cursor ObtenerActividadFecha(String usuario,String fecha) throws SQLException {
         Cursor mCursor =
-                db.query(true, "Usuarios", new String[] {"nombre","fecha","hora",
+                db.query(true, "Actividades", new String[] {"nombre","fecha","hora",
                     	"detalle","tipo","usuario"}, 
-                    	"fecha = " + fecha + "and usuario = "+ usuario, null,
+                    	"fecha = '" + fecha + "' and usuario = '"+ usuario+"'", null,
                 null, null, null, null);
         if (mCursor != null) {
             mCursor.moveToFirst();

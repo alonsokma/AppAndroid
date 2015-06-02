@@ -1,5 +1,6 @@
 package com.example.appandroid;
 
+import java.lang.reflect.Array;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -56,15 +57,16 @@ public class Base extends Activity {
 	private String selectedGridDate;
 
 	private String nombre;
-	private String fecha;
+	public static String fecha;
 	private String detalle;
 	private int tipo;
-	private Timestamp hora;
+	private String hora;
 	private String nick;
 	public static String user;
 	private String contactName;
 	private String contactPhone;
 	private GregorianCalendar calen;
+	public static Mi_fragment_112247AM F1_112242AM;
 
 	public void Mensaje(String msg) {
 		Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
@@ -118,7 +120,7 @@ public class Base extends Activity {
 
 		Intent intento = new Intent(getApplicationContext(), Prompts.class);
 		intento.putExtra("str1", fecha);
-		intento.putExtra("user", nick);
+		intento.putExtra("user", user);
 		startActivity(intento);
 		/*
 		 * AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
@@ -179,7 +181,7 @@ public class Base extends Activity {
 		        fecha = new java.sql.Date(parsed.getTime());*/
 				fecha = selectedGridDate;
 				Mensaje(selectedGridDate);
-
+				llenarLista(F1_112242AM,fecha);
 			}
 		});
 		
@@ -340,7 +342,7 @@ public class Base extends Activity {
 			thora.setText("Hora de inicio: ");
 			thora.setText(thora.getText().toString() + padding_str(selectedHour)
 					+ ":" + padding_str(selectedMinute));
-			// Mensaje(hora.getText().toString());
+			hora = padding_str(selectedHour) + ":" + padding_str(selectedMinute);
 			
 			/*String str_hour=padding_str(selectedHour)+ ":" + padding_str(selectedMinute);
 	        DateFormat formatter ; 
@@ -408,15 +410,27 @@ public class Base extends Activity {
 					Intent intent = new Intent(Intent.ACTION_PICK,
 							ContactsContract.Contacts.CONTENT_URI);
 					startActivityForResult(intent, PICK_CONTACT);
-					EditText incontact = (EditText) findViewById(R.id.contactsearch);
-					incontact.setText(contactName +":"+contactPhone);
 				};break;
 				case R.id.btnAdd:{
 					EditText nom = (EditText) findViewById(R.id.namein);
 					nombre = nom.getText().toString();
 					EditText det = (EditText) findViewById(R.id.detallesin);
 					detalle = det.getText().toString();
-					
+					TextView fec = (TextView) findViewById(R.id.date);
+					fecha = fec.getText().toString();
+					if(AgregarActividad(nombre, fecha,hora,detalle,tipo,user)){
+						Mensaje("Actividad Creada Correctamente");
+						if(AgregarActividadContacto(contactName,contactPhone,nombre,user)){
+							Mensaje("ActividadContacto Creada..");
+						};
+						Intent intento = new Intent(getApplicationContext(),
+								MainActivity.class);
+						intento.putExtra("str1", fecha);
+						intento.putExtra("user", user);
+						startActivity(intento);
+					}else{
+						Mensaje("Error al Crear la Actividad");						
+					}
 				};break;
 				case R.id.btnCancel:{
 					Intent intento = new Intent(getApplicationContext(),
@@ -523,9 +537,19 @@ public class Base extends Activity {
 
 	};
 
-	public void llenarLista(Mi_fragment_112247AM f) {
-		f.LlenarLista_112257AM("Nombre del evento obtenido desde la lista o base de datos");
-		// Aqui se cargan las actividades de la base de datos por usuario
+	public void llenarLista(Mi_fragment_112247AM f,String fecha){
+		f.LimpiarLista_112257AM();
+		if(fecha != null){
+		   if(ObtenerActividadFecha(fecha)!= null){
+			   for(Actividad a : actividades){
+				   f.LlenarLista_112257AM(a.getNombre());
+			   }
+		   }
+		}else {
+			if(actividades != null) actividades.clear();
+			f.LlenarLista_112257AM("No hay Actividades");
+		}
+		//if(f.v != null) f.LlenarListView_112257AM(f.v);
 	}
 
 	DBAdapter db;
@@ -549,14 +573,44 @@ public class Base extends Activity {
 			return false;
 		}
 	}
+	
+	public boolean AgregarActividad(String nombre, String fecha,String hora,
+	    	String detalle,int tipo,String usuario) {
+		if (db == null) {
+			Log.i("ERROR DB: ", "Error db es null");
+			return false;
+		}
+		db.open();
+		if (db.insertActividad(nombre,fecha,hora,detalle,tipo,usuario)) {
+			db.close();
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public boolean AgregarActividadContacto(String nombreContacto, String telContacto
+    		,String nombreActividad, String nombreUsuario) {
+		if (db == null) {
+			Log.i("ERROR DB: ", "Error db es null");
+			return false;
+		}
+		db.open();
+		if (db.insertActividadContacto(nombreContacto,telContacto,nombreActividad,nombreUsuario)) {
+			db.close();
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-	public void ObtenerDatos() {
+	public void ObtenerUsuarios() {
 		// --cargamos todos los datos---
 		db.open();
 		Cursor c = db.CargarTodosLosUsuarios();
 		if (c.moveToFirst()) {
 			do {
-				MostarDato(c);
+				//MostarDato(c);
 			} while (c.moveToNext());
 		}
 		db.close();
@@ -572,6 +626,25 @@ public class Base extends Activity {
 		} else {
 			return false;
 		}
+	}
+	
+	public ArrayList<Actividad> ObtenerActividadFecha(String f) {
+		if(fecha == null || user == null) return null;
+		Actividad actividad;
+		db.open();
+		Cursor c = db.ObtenerActividadFecha(user, f);
+		if ( c != null && c.moveToFirst()) {
+			actividades = new ArrayList<Actividad>();
+			do {
+				actividad = new Actividad(c.getString(0),c.getString(1),c.getString(2),
+						c.getString(3),c.getInt(0),c.getString(4));
+				actividades.add(actividad);
+			} while (c.moveToNext());
+			db.close();
+			return actividades;
+		} 
+		Mensaje("No hay actividades");
+		return actividades;		
 	}
 
 	public void ActualizarUsuario(String nick, String nombre, String pass) {
@@ -593,11 +666,5 @@ public class Base extends Activity {
 		db.close();
 	}
 
-	public void MostarDato(Cursor c) {
-		/*
-		 * Mensaje("id: " + c.getString(0) + "\n" + "Nombre: " + c.getString(1)
-		 * + "\n" + "Dir:  " + c.getString(2));
-		 */
-	}
 
 }// fin de la clase base

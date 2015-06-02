@@ -8,21 +8,21 @@ public class Actividad {
 
     private String nombre;
 
-    private Date fecha;
+    private String fecha;
 
     private String detalle;
 
     private int tipo; // esto hay q ver cm se maneja, puede ser un int o nose, yo digo 1 para diario, 2 para semanal, 3 para mensual, etc
 
-    private Timestamp hora;
+    private String hora;
 
-    private Usuario user;
+    private String user;
     
     private GregorianCalendar calen;
     
     public Actividad(){}
 
-    public Actividad(String nombre, Date fecha, String detalle, int tipo, Usuario user, Timestamp hora) {
+    public Actividad(String nombre, String fecha, String hora, String detalle,int tipo, String user) {
         this.nombre = nombre;
         this.fecha = fecha;
         this.hora = hora;
@@ -40,19 +40,19 @@ public class Actividad {
         this.nombre = nombre;
     }
 
-    public Date getFecha() {
+    public String getFecha() {
         return fecha;
     }
 
-    public void setFecha(Date fecha) {
+    public void setFecha(String fecha) {
         this.fecha = fecha;
     }
 
-    public Timestamp getHora() {
+    public String getHora() {
         return hora;
     }
 
-    public void setHora(Timestamp hora) {
+    public void setHora(String hora) {
         this.hora = hora;
     }
 
@@ -74,14 +74,14 @@ public class Actividad {
 
     @Override
     public String toString() {
-        return "Actividad{" + "nombre=" + nombre + ", fecha=" + fecha + ", detalle=" + detalle + ", tipo=" + tipo + ", user=" + getUser() + ", hora=" + hora.getTime() + '}';
+        return "Actividad{" + "nombre=" + nombre + ", fecha=" + fecha + ", detalle=" + detalle + ", tipo=" + tipo + ", user=" + user + ", hora=" + hora + '}';
     }
 
-    public Usuario getUser() {
+    public String getUser() {
         return user;
     }
 
-    public void setUser(Usuario user) {
+    public void setUser(String user) {
         this.user = user;
     }
 }
