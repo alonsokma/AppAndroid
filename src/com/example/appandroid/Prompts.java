@@ -1,5 +1,7 @@
 package com.example.appandroid;
 
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -20,7 +22,7 @@ public class Prompts extends Base{
 		 TextView t = (TextView) findViewById(R.id.date);
 			t.setText("");
 			t.setText(t.getText().toString()+msg);
-		 
+			
 	}
 	
 }

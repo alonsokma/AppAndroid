@@ -14,7 +14,9 @@ import com.example.appandroid.CalendarAdapter;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -67,6 +69,7 @@ public class Base extends Activity {
 	private String contactPhone;
 	private GregorianCalendar calen;
 	public static Mi_fragment_112247AM F1_112242AM;
+	public static boolean  estado = false;
 
 	public void Mensaje(String msg) {
 		Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
@@ -181,6 +184,7 @@ public class Base extends Activity {
 		        fecha = new java.sql.Date(parsed.getTime());*/
 				fecha = selectedGridDate;
 				Mensaje(selectedGridDate);
+				estado = true;
 				llenarLista(F1_112242AM,fecha);
 			}
 		});
@@ -197,6 +201,7 @@ public class Base extends Activity {
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
+		estado = false;
 		AgregarActividad();
 		return super.onContextItemSelected(item);
 	}
@@ -549,7 +554,7 @@ public class Base extends Activity {
 			if(actividades != null) actividades.clear();
 			f.LlenarLista_112257AM("No hay Actividades");
 		}
-		//if(f.v != null) f.LlenarListView_112257AM(f.v);
+		if(f.v != null && estado == true) f.LlenarListView_112257AM(f.v);
 	}
 
 	DBAdapter db;
@@ -582,6 +587,16 @@ public class Base extends Activity {
 		}
 		db.open();
 		if (db.insertActividad(nombre,fecha,hora,detalle,tipo,usuario)) {
+			/*Intent intentoLanzar = new Intent(getBaseContext(), Temporizador.class);
+			PendingIntent pIntent=PendingIntent.getBroadcast(this, 0, intentoLanzar, PendingIntent.FLAG_UPDATE_CURRENT);
+			Calendar cal = Calendar.getInstance(); 
+			cal.setTimeInMillis(System.currentTimeMillis());
+			cal.set (Calendar.HOUR_OF_DAY, Integer.parseInt(hora.split(":")[0])); 
+			cal.set (Calendar.MINUTE, Integer.parseInt(hora.split(":")[1])); 
+			cal.set (Calendar.SECOND, 0);
+			 
+			AlarmManager aMan = (AlarmManager)getSystemService(ALARM_SERVICE); 
+			aMan.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pIntent); */
 			db.close();
 			return true;
 		} else {
